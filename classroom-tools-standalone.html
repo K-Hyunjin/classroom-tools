@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>학급 도구함</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1F2F5;
+    --paper-line:rgba(17,17,20,0.10);
+    --board:#FFFFFF;
+    --board-dark:#FFFFFF;
+    --chalk:#111114;
+    --accent:#3B6FE0;
+    --accent-soft:rgba(59,111,224,0.10);
+    --ink:#111114;
+    --muted:#8A8F98;
+    --danger:#E5484D;
+    --lock-bg:#FFF3B0;
+    --lock-border:#E6B800;
+    --lock-text:#6B5900;
+    --radius:14px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root[data-theme="dark"]{
+    --paper:#0B0C0E;
+    --paper-line:rgba(255,255,255,0.10);
+    --board:#1C1D21;
+    --board-dark:#1C1D21;
+    --chalk:#F2F3F5;
+    --accent:#5B9CFF;
+    --accent-soft:rgba(91,156,255,0.14);
+    --ink:#F2F3F5;
+    --muted:#9297A3;
+    --lock-bg:rgba(91,156,255,0.22);
+    --lock-border:#5B9CFF;
+    --lock-text:#BFD9FF;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+  body{
+    margin:0; min-height:100%; color:var(--ink);
+    font-family:'Noto Sans KR',sans-serif; line-height:1.55;
+    background:var(--paper);
+  }
+  h1,h2,h3,.title-font{font-family:'Noto Sans KR',sans-serif;}
+  button{font-family:inherit;}
+  .wrap{max-width:720px; margin:0 auto; padding:28px 20px 60px;}
+  .neon{ color:var(--accent); }
+
+  header.hero{
+    padding:52px 20px 40px; text-align:center;
+  }
+  header.hero h1{font-size:clamp(30px,8vw,44px); margin:0 0 8px; font-weight:400;}
+  header.hero p{margin:0; color:var(--muted); font-size:15px;}
+
+  .stack{display:grid; gap:14px; padding:0 16px;}
+  .menu-btn{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    background:var(--board); border:1.5px solid var(--paper-line); border-radius:var(--radius);
+    padding:20px 18px; cursor:pointer; color:var(--ink); font-size:17px; font-weight:700;
+    transition:box-shadow .18s ease, border-color .18s ease, transform .12s ease;
+  }
+  .menu-btn:hover{ box-shadow:0 2px 10px rgba(0,0,0,.10); transform:translateY(-1px); }
+  .menu-btn:active{ transform:translateY(0); }
+  .menu-btn .emoji{font-size:24px;}
+  .menu-btn.small{font-size:14px; font-weight:500; padding:12px 16px; background:transparent; color:var(--muted);}
+
+  .join-row{display:flex; gap:8px; padding:0 16px; margin-top:4px;}
+  .join-row input{flex:1;}
+
+  .tool-header{display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .back-btn{
+    border:1.5px solid var(--paper-line); background:transparent; color:var(--ink);
+    border-radius:10px; padding:8px 12px; cursor:pointer; font-size:14px; font-weight:500;
+  }
+  .back-btn:hover{background:var(--accent-soft);}
+  .tool-header h2{margin:0; font-weight:400; font-size:22px;}
+
+  .card{
+    background:var(--board); border:1.5px solid var(--paper-line); border-radius:var(--radius);
+    padding:20px; margin-bottom:18px;
+  }
+  .option-card{
+    background:var(--board); border:1.5px solid var(--paper-line); border-radius:var(--radius);
+    padding:20px; margin-bottom:14px; cursor:pointer; text-align:left; width:100%; color:var(--ink);
+    transition:box-shadow .18s ease, border-color .18s ease;
+  }
+  .option-card:hover{ box-shadow:0 2px 10px rgba(0,0,0,.10); }
+  .option-card strong{display:block; font-size:17px; margin-bottom:4px;}
+  .option-card span{color:var(--muted); font-size:13.5px;}
+
+  label{display:block; font-size:13.5px; color:var(--muted); margin-bottom:6px; font-weight:500;}
+  textarea, input[type=text], input[type=number]{
+    width:100%; border:1.5px solid var(--paper-line); border-radius:10px; padding:10px 12px;
+    font-size:15px; font-family:inherit; color:var(--ink); background:var(--board-dark);
+  }
+  textarea:focus, input:focus{ outline:none; border-color:var(--accent); }
+  textarea{min-height:100px; resize:vertical;}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .row > *{flex:1; min-width:120px;}
+
+  .btn{
+    border:1.5px solid var(--paper-line); border-radius:10px; padding:12px 18px; font-size:15px; font-weight:700;
+    cursor:pointer; background:var(--board); color:var(--ink);
+  }
+  .btn:hover{background:var(--accent-soft);}
+  .btn:active{opacity:.85;}
+  .btn.secondary{background:var(--board); color:var(--ink); border:1.5px solid var(--paper-line);}
+  .mode-btn.active{color:var(--accent); background:var(--accent-soft);}
+  .btn.wide{width:100%; margin-top:10px;}
+  .btn.accent{background:var(--board); color:var(--ink); border:1.5px solid var(--paper-line);}
+  .btn.accent:hover{background:var(--accent-soft);}
+  .btn.big-round{border-radius:50%; width:150px; height:150px; font-size:16px; margin:0 auto; display:block;}
+
+  .pill-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .pill{background:var(--board); color:var(--ink); border:1.5px solid var(--paper-line); padding:7px 12px; border-radius:20px; font-size:13.5px;}
+  .pill button{background:none; border:none; color:var(--ink); margin-left:6px; cursor:pointer; font-size:13px;}
+
+  .result-box{ text-align:center; padding:22px 16px; border-radius:var(--radius); background:var(--board-dark); border:1.5px solid var(--paper-line); }
+  .result-box .big{font-family:'Noto Sans KR'; font-size:clamp(24px,7vw,36px); margin:6px 0; color:var(--accent);}
+  .result-box .label{color:var(--muted); font-size:14px;}
+
+  .vote-item{
+    display:flex; justify-content:space-between; align-items:center;
+    border:1.5px solid var(--paper-line); border-radius:10px; padding:12px 14px; margin-bottom:8px;
+  }
+  .vote-item button{background:var(--board); color:var(--ink); border:1.5px solid var(--paper-line); border-radius:8px; padding:8px 14px; font-weight:700; cursor:pointer;}
+  .vote-item .count{font-weight:700; font-size:17px; min-width:26px; text-align:center;}
+  .bar-track{background:var(--accent-soft); border-radius:6px; height:8px; overflow:hidden; margin-top:8px;}
+  .bar-fill{background:var(--accent); height:100%;}
+
+  .room-panel-top{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center; margin-bottom:26px;
+  }
+  .room-code-label{font-size:12px; color:var(--muted); text-align:center; display:block;}
+  .room-code-display{font-family:'Noto Sans KR'; font-size:30px; letter-spacing:3px; text-align:center;}
+  .people-badge{
+    justify-self:end; background:var(--board); border:1.5px solid var(--paper-line); padding:6px 12px; border-radius:20px; font-size:13px; font-weight:700;
+  }
+  .room-center{ padding:26px 0 6px; text-align:center; }
+  .waiting-msg{ text-align:center; color:var(--muted); padding:20px 0; }
+
+  .tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .tab{border:1.5px solid var(--paper-line); background:var(--board); color:var(--ink); border-radius:20px; padding:8px 16px; cursor:pointer; font-size:14px; font-weight:500;}
+  .tab.active{background:var(--accent-soft); color:var(--accent); font-weight:700;}
+
+  .hidden{display:none !important;}
+
+  .seat-grid{display:grid; gap:8px; margin-top:14px;}
+  .seat{
+    border:1.5px solid var(--paper-line); border-radius:10px; padding:10px 4px; text-align:center;
+    font-size:13.5px; min-height:52px; display:flex; align-items:center; justify-content:center;
+    background:var(--board-dark); cursor:pointer; user-select:none;
+  }
+  .seat.fixed{background:var(--accent-soft); color:var(--accent); font-weight:700;}
+  .seat.locked{background:var(--lock-bg); border-color:var(--lock-border); color:var(--lock-text); font-weight:700;}
+  .note{font-size:13px; color:var(--muted); margin-top:8px;}
+
+  svg text{font-family:'Noto Sans KR',sans-serif; fill:var(--ink);}
+
+  @media (max-width:480px){ .row > *{min-width:100%;} }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyALzyA795EtONvi-JKn_q_bL7lOUtNU04Y",
+    authDomain: "classroom-tools-1faf0.firebaseapp.com",
+    projectId: "classroom-tools-1faf0",
+    storageBucket: "classroom-tools-1faf0.firebasestorage.app",
+    messagingSenderId: "938632398789",
+    appId: "1:938632398789:web:6b0d08869fbdf88938edac"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+</head>
+<body>
+
+<!-- ================= HOME ================= -->
+<div id="view-home" style="min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative;">
+  <button id="theme-toggle-btn" onclick="toggleTheme()" style="position:fixed; top:16px; left:16px; background:var(--board); border:1.5px solid var(--paper-line); color:var(--ink); border-radius:20px; padding:8px 14px; font-size:13px; font-weight:500; cursor:pointer; z-index:10;">🌙 다크 모드</button>
+  <div style="width:100%; max-width:360px; padding:20px;">
+    <div class="stack">
+      <button class="menu-btn" onclick="showView('room-create')">
+        방 만들기
+      </button>
+    </div>
+    <div class="join-row" style="margin-top:14px;">
+      <input type="text" id="join-code-input" placeholder="방 번호" onkeydown="if(event.key==='Enter'){joinRoom();}">
+      <button class="btn accent" onclick="joinRoom()">참가하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ROOM CREATE (모드 선택) ================= -->
+<div id="view-room-create" class="hidden">
+  <div class="wrap">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showView('home')">← 처음으로</button>
+    </div>
+    <button class="option-card" onclick="resetVoteSetup(); showView('vote-host-setup')">
+      <strong>🗳️ 투표하기</strong>
+      <span>방 번호를 만들고, 참가자들이 실시간으로 투표해요</span>
+    </button>
+    <button class="option-card" onclick="showView('draw')">
+      <strong>🎲 뽑기</strong>
+      <span>사다리타기 · 제비뽑기 · 뽑기</span>
+    </button>
+    <button class="option-card" onclick="showView('seat')">
+      <strong>🪑 자리 랜덤 배치</strong>
+      <span>이름을 넣으면 자동으로 랜덤 자리를 배정해요</span>
+    </button>
+    <button class="option-card" onclick="showView('group')">
+      <strong>👥 조 랜덤 생성</strong>
+      <span>인원수를 정하면 자동으로 조를 나눠요</span>
+    </button>
+  </div>
+</div>
+
+<!-- ================= VOTE: 방장 - 후보 설정 ================= -->
+<div id="view-vote-host-setup" class="hidden">
+  <div class="wrap">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showView('room-create')">← 뒤로</button>
+    </div>
+    <div class="card">
+      <label>후보 이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="vote-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addCandidate();}">
+        <button class="btn secondary" onclick="addCandidate()" style="flex:0 0 auto;">추가</button>
+      </div>
+      <div class="pill-list" id="candidate-pills"></div>
+      <button class="btn wide accent" onclick="createVoteRoom()">방 만들기</button>
+      <p class="note">후보가 1명이면 찬성/반대 투표, 2명 이상이면 다수결 투표로 진행돼요. 방장은 투표에 참여하지 않아요.</p>
+      <p class="note hidden" id="vote-offline-note">⚠️ 지금은 실시간 기능을 불러올 수 없어요. 잠시 후 다시 시도해주세요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= VOTE: 방장 화면 ================= -->
+<div id="view-vote-host" class="hidden">
+  <div class="wrap">
+    <div class="card">
+      <div class="room-panel-top">
+        <span></span>
+        <span>
+          <span class="room-code-label">방 번호</span>
+          <span class="room-code-display neon" id="host-room-code">----</span>
+        </span>
+        <span class="people-badge" id="host-badge">참가 0명</span>
+      </div>
+      <div class="room-center" id="host-center">
+        <button class="btn accent big-round" onclick="startRoomVote()">투표<br>시작하기</button>
+      </div>
+      <div id="host-result-area" class="hidden"></div>
+    </div>
+    <button class="btn wide secondary" onclick="closeRoom()">방 닫고 처음으로</button>
+  </div>
+</div>
+
+<!-- ================= VOTE: 참가자 화면 ================= -->
+<div id="view-vote-participant" class="hidden">
+  <div class="wrap">
+    <div class="card">
+      <div class="room-panel-top">
+        <span></span>
+        <span>
+          <span class="room-code-label">방 번호</span>
+          <span class="room-code-display neon" id="participant-room-code">----</span>
+        </span>
+        <span></span>
+      </div>
+      <div id="participant-body"></div>
+    </div>
+    <button class="btn wide secondary" onclick="showView('home')">나가기</button>
+  </div>
+</div>
+
+<!-- ================= DRAW ================= -->
+<div id="view-draw" class="hidden">
+  <div class="wrap">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showView('room-create')">← 뒤로</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="ladder" onclick="switchDrawTab('ladder')">사다리타기</button>
+      <button class="tab" data-tab="lot" onclick="switchDrawTab('lot')">제비뽑기</button>
+      <button class="tab" data-tab="pick" onclick="switchDrawTab('pick')">뽑기</button>
+    </div>
+
+    <div id="draw-ladder" class="card">
+      <label>이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="ladder-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('ladder','ladder-name-input','ladder-pills');}">
+        <button class="btn secondary" style="flex:0 0 auto;" onclick="addToList('ladder','ladder-name-input','ladder-pills')">추가</button>
+      </div>
+      <div class="pill-list" id="ladder-pills"></div>
+
+      <label style="margin-top:16px;">옵션</label>
+      <div class="row">
+        <button class="btn secondary mode-btn" data-mode="order" onclick="selectLadderMode('order')">순서 정하기</button>
+        <button class="btn secondary mode-btn" data-mode="winner" onclick="selectLadderMode('winner')">당첨자 뽑기</button>
+        <button class="btn secondary mode-btn" data-mode="custom" onclick="selectLadderMode('custom')">선택</button>
+      </div>
+
+      <div id="ladder-custom-area" class="hidden" style="margin-top:14px;">
+        <label>결과 항목 (이름 수만큼 입력 가능)</label>
+        <div class="row">
+          <input type="text" id="outcome-input" placeholder="예: 치킨" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('ladderOutcome','outcome-input','outcome-pills');}">
+          <button class="btn secondary" id="outcome-add-btn" style="flex:0 0 auto;" onclick="addToList('ladderOutcome','outcome-input','outcome-pills')">추가</button>
+        </div>
+        <div class="pill-list" id="outcome-pills"></div>
+        <p class="note">추가한 항목을 클릭하면 그 위치의 내용을 수정할 수 있어요. 채우지 않은 자리는 '없음'으로 채워져요.</p>
+      </div>
+
+      <button class="btn wide accent" style="margin-top:14px;" onclick="buildLadder()">사다리 만들기</button>
+      <div id="ladder-board" style="margin-top:16px; overflow-x:auto;"></div>
+      <p class="note" id="ladder-hint"></p>
+    </div>
+
+    <div id="draw-lot" class="card hidden">
+      <label>이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="lot-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('lot','lot-name-input','lot-pills');}">
+        <button class="btn secondary" style="flex:0 0 auto;" onclick="addToList('lot','lot-name-input','lot-pills')">추가</button>
+      </div>
+      <div class="pill-list" id="lot-pills"></div>
+      <button class="btn wide accent" style="margin-top:14px;" onclick="drawLot()">제비 뽑기</button>
+      <div class="result-box hidden" id="lot-result" style="margin-top:16px;">
+        <div class="label">뽑힌 결과</div>
+        <div class="big" id="lot-result-text"></div>
+      </div>
+    </div>
+
+    <div id="draw-pick" class="card hidden">
+      <label>이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="pick-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('pick','pick-name-input','pick-pills');}">
+        <button class="btn secondary" style="flex:0 0 auto;" onclick="addToList('pick','pick-name-input','pick-pills')">추가</button>
+      </div>
+      <div class="pill-list" id="pick-pills"></div>
+
+      <div id="pick-drawn-grid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;"></div>
+
+      <button class="btn wide accent" style="margin-top:14px;" onclick="drawPick()">뽑기</button>
+      <div class="result-box" style="margin-top:16px;">
+        <div class="big" id="pick-current-text">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SEAT ================= -->
+<div id="view-seat" class="hidden">
+  <div class="wrap">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showView('room-create')">← 뒤로</button>
+    </div>
+
+    <div class="card">
+      <label>학생 이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="seat-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('seat','seat-name-input','seat-pills');}">
+        <button class="btn secondary" style="flex:0 0 auto;" onclick="addToList('seat','seat-name-input','seat-pills')">추가</button>
+      </div>
+      <div class="pill-list" id="seat-pills"></div>
+
+      <div class="row" style="margin-top:12px;">
+        <div><label>몇 줄로 할지 (행)</label><input type="number" id="seat-rows" min="1" value="5"></div>
+      </div>
+      <p class="note">인원수와 줄 수에 따라 일렬/교차 배치가 자동으로 정해져요.</p>
+
+      <button class="btn wide accent" onclick="showSeatPreview()">자리 배치하기</button>
+    </div>
+
+    <div class="card hidden" id="seat-output">
+      <div id="seat-grid" class="seat-grid"></div>
+      <p class="note">자리를 클릭하면 그 자리가 고정돼요. 다시 누르면 고정이 풀려요.</p>
+      <button class="btn wide secondary" onclick="randomizeSeats()">랜덤 배치</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GROUP ================= -->
+<div id="view-group" class="hidden">
+  <div class="wrap">
+    <div class="tool-header">
+      <button class="back-btn" onclick="showView('room-create')">← 뒤로</button>
+    </div>
+    <div class="card">
+      <label>이름 (한 명씩 입력 후 추가)</label>
+      <div class="row">
+        <input type="text" id="group-name-input" placeholder="예: 김민준" onkeydown="if(event.key==='Enter'){event.preventDefault(); addToList('group','group-name-input','group-pills');}">
+        <button class="btn secondary" style="flex:0 0 auto;" onclick="addToList('group','group-name-input','group-pills')">추가</button>
+      </div>
+      <div class="pill-list" id="group-pills"></div>
+
+      <label style="margin-top:16px;">나누는 기준</label>
+      <div class="row">
+        <button class="btn secondary mode-btn group-mode-btn active" data-mode="count" onclick="selectGroupMode('count')">몇 조로 나눌지</button>
+        <button class="btn secondary mode-btn group-mode-btn" data-mode="size" onclick="selectGroupMode('size')">한 조에 몇 명씩</button>
+      </div>
+
+      <div id="group-count-area" style="margin-top:12px;">
+        <label>조 개수</label>
+        <input type="number" id="group-count" min="1" value="4">
+      </div>
+      <div id="group-size-area" class="hidden" style="margin-top:12px;">
+        <label>한 조에 몇 명씩</label>
+        <input type="number" id="group-size" min="1" value="4">
+      </div>
+
+      <button class="btn wide accent" style="margin-top:14px;" onclick="buildGroups()">조 나누기</button>
+    </div>
+
+    <div class="card hidden" id="group-output">
+      <div id="group-result" style="display:grid; gap:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+/* ---------------- THEME ---------------- */
+let currentTheme = 'light';
+try{ currentTheme = localStorage.getItem('theme') || 'light'; }catch(e){}
+document.documentElement.setAttribute('data-theme', currentTheme);
+function toggleTheme(){
+  currentTheme = currentTheme==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  try{ localStorage.setItem('theme', currentTheme); }catch(e){}
+  renderThemeToggle();
+}
+function renderThemeToggle(){
+  const btn = document.getElementById('theme-toggle-btn');
+  if(btn) btn.textContent = currentTheme==='dark' ? '☀️ 화이트 모드' : '🌙 다크 모드';
+}
+renderThemeToggle();
+
+function showView(name){
+  ['home','room-create','vote-host-setup','vote-host','vote-participant','draw','seat','group'].forEach(v=>{
+    document.getElementById('view-'+v).classList.toggle('hidden', v!==name);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ---------------- DB INIT (Firebase) ---------------- */
+let dbApi=null, userApi=null, myId=null;
+async function initDb(){
+  try{
+    dbApi = firebase.firestore();
+    await new Promise((resolve, reject)=>{
+      const unsub = firebase.auth().onAuthStateChanged(user=>{
+        if(user){ myId = user.uid; unsub(); resolve(); }
+      }, reject);
+      firebase.auth().signInAnonymously().catch(reject);
+    });
+    userApi = { id: async ()=> myId };
+  }catch(e){ console.error(e); dbApi=null; }
+  if(!dbApi){ document.getElementById('vote-offline-note').classList.remove('hidden'); }
+}
+initDb();
+
+/* ---------------- VOTE: 후보 설정 ---------------- */
+let candidates = [];
+function addCandidate(){
+  const input = document.getElementById('vote-name-input');
+  const name = input.value.trim();
+  if(!name) return;
+  candidates.push(name);
+  input.value='';
+  renderCandidatePills();
+}
+function renderCandidatePills(){
+  const box = document.getElementById('candidate-pills');
+  box.innerHTML = candidates.map((c,i)=>
+    `<span class="pill">${escapeHtml(c)}<button onclick="removeCandidate(${i})">✕</button></span>`
+  ).join('');
+}
+function removeCandidate(i){ candidates.splice(i,1); renderCandidatePills(); }
+function resetVoteSetup(){ candidates=[]; renderCandidatePills(); }
+
+/* ---------------- VOTE: 방 (room) ---------------- */
+let currentRoomCode=null, isHost=false, currentRoom=null;
+let participantCount=0, votedCount=0, voteCountMap={}, myVoteChoice=null;
+let roomUnsub=null, participantsUnsub=null, votesUnsub=null;
+
+function genRoomCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 헷갈리기 쉬운 0/O, 1/I 제외
+  let code='';
+  for(let i=0;i<6;i++){ code += chars[Math.floor(Math.random()*chars.length)]; }
+  return code;
+}
+
+async function createVoteRoom(){
+  if(candidates.length===0){ alert('후보를 한 명 이상 추가해주세요.'); return; }
+  if(!dbApi){ alert('실시간 기능을 불러올 수 없어요. 잠시 후 다시 시도해주세요.'); return; }
+  const choices = candidates.length===1 ? ['찬성','반대'] : candidates.slice();
+  const subjectName = candidates.length===1 ? candidates[0] : null;
+  let code;
+  for(let i=0;i<5;i++){
+    code = genRoomCode();
+    const snap = await dbApi.doc('rooms/'+code).get();
+    if(!snap.exists) break;
+  }
+  await dbApi.doc('rooms/'+code).set({ type:'vote', choices, subjectName, state:'lobby', hostId: myId||'', createdAt: Date.now() });
+  currentRoomCode = code; isHost = true;
+  subscribeRoom(code);
+  showView('vote-host');
+}
+
+async function joinRoom(){
+  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+  if(!code){ alert('방 번호를 입력해주세요.'); return; }
+  if(!dbApi){ alert('실시간 기능을 불러올 수 없어요. 잠시 후 다시 시도해주세요.'); return; }
+  const snap = await dbApi.doc('rooms/'+code).get();
+  if(!snap.exists){ alert('존재하지 않는 방 번호예요.'); return; }
+  currentRoomCode = code; isHost = false; myVoteChoice=null;
+  if(myId){ await dbApi.doc('rooms/'+code).collection('participants').doc(myId).set({ joinedAt: Date.now() }); }
+  subscribeRoom(code);
+  showView('vote-participant');
+}
+
+function subscribeRoom(code){
+  if(roomUnsub) roomUnsub();
+  if(participantsUnsub) participantsUnsub();
+  if(votesUnsub) votesUnsub();
+  roomUnsub = dbApi.doc('rooms/'+code).onSnapshot(snap=>{
+    currentRoom = snap.exists ? snap.data() : null;
+    renderRoomView();
+  });
+  participantsUnsub = dbApi.doc('rooms/'+code).collection('participants').onSnapshot(qs=>{
+    participantCount = qs.size;
+    renderRoomView();
+  });
+  votesUnsub = dbApi.doc('rooms/'+code).collection('votes').onSnapshot(qs=>{
+    const counts = {};
+    (currentRoom && currentRoom.choices || []).forEach(c=> counts[c]=0);
+    qs.docs.forEach(d=>{
+      const v = d.data();
+      if(v && counts.hasOwnProperty(v.choice)) counts[v.choice]++;
+      if(myId && d.id===myId) myVoteChoice = v ? v.choice : null;
+    });
+    voteCountMap = counts;
+    votedCount = qs.size;
+    renderRoomView();
+  });
+}
+
+function renderRoomView(){
+  if(!currentRoom) return;
+  if(isHost) renderHostView(); else renderParticipantView();
+}
+
+function renderHostView(){
+  document.getElementById('host-room-code').textContent = currentRoomCode;
+  document.getElementById('host-badge').textContent =
+    currentRoom.state==='lobby' ? `참가 ${participantCount}명` : `${votedCount} / ${participantCount}`;
+  const center = document.getElementById('host-center');
+  const resultArea = document.getElementById('host-result-area');
+  if(currentRoom.state==='lobby'){
+    center.classList.remove('hidden');
+    center.innerHTML = `<button class="btn accent big-round" onclick="startRoomVote()">투표<br>시작하기</button>`;
+    resultArea.classList.add('hidden');
+  } else if(currentRoom.state==='voting'){
+    center.classList.remove('hidden');
+    center.innerHTML = `<button class="btn accent big-round" onclick="revealResults()">투표 결과<br>확인하기</button>`;
+    resultArea.classList.add('hidden');
+  } else {
+    center.classList.add('hidden');
+    resultArea.classList.remove('hidden');
+    resultArea.innerHTML = renderResultBreakdown();
+  }
+}
+
+function renderParticipantView(){
+  document.getElementById('participant-room-code').textContent = currentRoomCode;
+  const body = document.getElementById('participant-body');
+  if(currentRoom.state==='lobby'){
+    body.innerHTML = `<p class="waiting-msg">방장이 투표를 시작하면 여기에 후보가 나타나요.</p>`;
+  } else if(currentRoom.state==='voting'){
+    if(myVoteChoice){
+      body.innerHTML = `<p class="waiting-msg">✅ 투표 완료! 결과는 방장 화면에서 공개돼요.</p>`;
+    } else {
+      body.innerHTML = (currentRoom.choices||[]).map(name=>
+        `<div class="vote-item"><span>${escapeHtml(name)}</span><button onclick="castMyVote('${encodeURIComponent(name)}')">투표</button></div>`
+      ).join('');
+    }
+  } else {
+    body.innerHTML = renderResultBreakdown();
+  }
+}
+
+function renderResultBreakdown(){
+  const entries = Object.entries(voteCountMap);
+  const total = entries.reduce((s,e)=>s+e[1],0);
+  return entries.map(([name,count])=>{
+    const pct = total>0 ? Math.round(count/total*100) : 0;
+    return `<div class="vote-item" style="flex-direction:column; align-items:stretch; gap:2px;">
+      <div style="display:flex; justify-content:space-between;"><span>${escapeHtml(name)}</span><span class="count">${count}표 (${pct}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;"></div></div>
+    </div>`;
+  }).join('') || `<p class="waiting-msg">투표 결과가 없어요.</p>`;
+}
+
+async function startRoomVote(){ await dbApi.doc('rooms/'+currentRoomCode).update({ state:'voting' }); }
+async function revealResults(){ await dbApi.doc('rooms/'+currentRoomCode).update({ state:'results' }); }
+async function castMyVote(encName){
+  if(!myId){ alert('투표하려면 로그인 상태여야 해요.'); return; }
+  const name = decodeURIComponent(encName);
+  await dbApi.doc('rooms/'+currentRoomCode).collection('votes').doc(myId).set({ choice:name, ts:Date.now() });
+}
+async function closeRoom(){
+  if(dbApi && currentRoomCode){ await dbApi.doc('rooms/'+currentRoomCode).delete(); }
+  if(roomUnsub) roomUnsub(); if(participantsUnsub) participantsUnsub(); if(votesUnsub) votesUnsub();
+  currentRoomCode=null; currentRoom=null; isHost=false;
+  showView('home');
+}
+
+/* ---------------- DRAW (뽑기) ---------------- */
+function switchDrawTab(tab){
+  ['ladder','lot','pick'].forEach(t=>{
+    document.getElementById('draw-'+t).classList.toggle('hidden', t!==tab);
+    document.querySelector(`.tab[data-tab="${t}"]`).classList.toggle('active', t===tab);
+  });
+}
+
+const lists = { ladder:[], lot:[], pick:[], group:[], seat:[], ladderOutcome:[] };
+let outcomeEditIndex = null;
+let ladderMode = null;
+let ladderPaths = [];
+const pathColorPalette = ['#FF6B6B','#FFD166','#06D6A0','#4D96FF','#C77DFF','#F72585','#80FFDB','#FFB4A2','#B5E48C','#F4A261'];
+
+function addToList(key, inputId, pillsId){
+  const input = document.getElementById(inputId);
+  const v = input.value.trim();
+  if(!v) return;
+  if(key==='ladderOutcome' && outcomeEditIndex!==null){
+    lists.ladderOutcome[outcomeEditIndex] = v;
+    outcomeEditIndex = null;
+  } else {
+    if(key==='ladderOutcome' && lists.ladderOutcome.length>=lists.ladder.length) return;
+    lists[key].push(v);
+  }
+  input.value='';
+  renderPills(key, pillsId);
+  if(key==='pick') resetPickState();
+}
+function removeFromList(key, i, pillsId){
+  lists[key].splice(i,1);
+  if(key==='ladderOutcome' && outcomeEditIndex===i) outcomeEditIndex=null;
+  renderPills(key, pillsId);
+  if(key==='pick') resetPickState();
+}
+function editOutcome(i){
+  outcomeEditIndex = i;
+  const input = document.getElementById('outcome-input');
+  input.disabled = false;
+  input.value = lists.ladderOutcome[i];
+  input.focus();
+}
+function renderPills(key, pillsId){
+  const arr = lists[key];
+  const box = document.getElementById(pillsId);
+  box.innerHTML = arr.map((v,i)=>{
+    const click = key==='ladderOutcome' ? ` onclick="editOutcome(${i})" style="cursor:pointer;"` : '';
+    return `<span class="pill"${click}>${escapeHtml(v)}<button onclick="event.stopPropagation();removeFromList('${key}',${i},'${pillsId}')">✕</button></span>`;
+  }).join('');
+  if(key==='ladderOutcome') updateOutcomeInputState();
+}
+function updateOutcomeInputState(){
+  const full = lists.ladderOutcome.length>=lists.ladder.length && outcomeEditIndex===null;
+  document.getElementById('outcome-input').disabled = full;
+  document.getElementById('outcome-add-btn').disabled = full;
+}
+
+function selectLadderMode(mode){
+  ladderMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('ladder-custom-area').classList.toggle('hidden', mode!=='custom');
+}
+
+function buildLadder(){
+  const names = lists.ladder;
+  if(names.length<2){ alert('이름을 2명 이상 추가해주세요.'); return; }
+  if(!ladderMode){ alert('옵션을 선택해주세요 (순서 정하기 / 당첨자 뽑기 / 선택)'); return; }
+  let outcomes;
+  if(ladderMode==='order'){
+    outcomes = names.map((_,i)=> String(i+1));
+  } else if(ladderMode==='winner'){
+    const winIdx = Math.floor(Math.random()*names.length);
+    outcomes = names.map((_,i)=> i===winIdx ? '당첨' : '없음');
+  } else {
+    outcomes = names.map((_,i)=> lists.ladderOutcome[i] || '없음');
+  }
+  renderLadderSVG(names, outcomes);
+}
+
+function renderLadderSVG(names, outcomes){
+  const n = names.length;
+  const w = 90, h = 360, top = 30;
+  const svgW = n*w;
+
+  const rungs = [];
+  const steps = 12;
+  const stepH = h/steps;
+  for(let s=0;s<steps;s++){
+    let used = new Set();
+    for(let i=0;i<n-1;i++){
+      if(used.has(i)||used.has(i+1)) continue;
+      if(Math.random()<0.35){
+        rungs.push({col:i, y: top + s*stepH + stepH/2});
+        used.add(i); used.add(i+1);
+      }
+    }
+  }
+  const sortedRungs = rungs.slice().sort((a,b)=>a.y-b.y);
+  const paths = []; const endCol = [];
+  for(let start=0; start<n; start++){
+    let col = start;
+    const points = [{x: w/2+col*w, y: top}];
+    sortedRungs.forEach(r=>{
+      if(r.col===col){
+        points.push({x:w/2+col*w, y:r.y}); col=col+1; points.push({x:w/2+col*w, y:r.y});
+      } else if(r.col===col-1){
+        points.push({x:w/2+col*w, y:r.y}); col=col-1; points.push({x:w/2+col*w, y:r.y});
+      }
+    });
+    points.push({x:w/2+col*w, y: top+h});
+    paths.push(points); endCol.push(col);
+  }
+  ladderPaths = paths;
+
+  let svg = `<svg viewBox="0 0 ${svgW} ${h+60}" width="100%" style="max-width:${svgW}px; display:block; margin:0 auto;">`;
+  for(let i=0;i<n;i++){
+    const x = w/2 + i*w;
+    svg += `<line x1="${x}" y1="${top}" x2="${x}" y2="${top+h}" stroke="var(--paper-line)" stroke-width="3"/>`;
+    svg += `<text x="${x}" y="${top-10}" text-anchor="middle" font-size="13" style="cursor:pointer;" onclick="toggleLadderHighlight(${i})">${escapeHtml(names[i])}</text>`;
+    svg += `<text x="${x}" y="${top+h+28}" text-anchor="middle" font-size="13" font-weight="700">${escapeHtml(outcomes[endCol[i]])}</text>`;
+  }
+  rungs.forEach(r=>{
+    const x1 = w/2 + r.col*w, x2 = w/2 + (r.col+1)*w;
+    svg += `<line x1="${x1}" y1="${r.y}" x2="${x2}" y2="${r.y}" stroke="var(--paper-line)" stroke-width="3"/>`;
+  });
+  svg += `<g id="ladder-highlights"></g></svg>`;
+  document.getElementById('ladder-board').innerHTML = svg;
+  document.getElementById('ladder-hint').textContent = '이름을 클릭하면 도착지까지 색깔 선으로 표시돼요.';
+}
+
+function toggleLadderHighlight(i){
+  const gid = 'lh-'+i;
+  const existing = document.getElementById(gid);
+  if(existing){ existing.remove(); return; }
+  const points = ladderPaths[i];
+  if(!points) return;
+  const color = pathColorPalette[i % pathColorPalette.length];
+  const d = 'M'+points.map(p=>`${p.x},${p.y}`).join(' L ');
+  const ns = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(ns,'g'); g.setAttribute('id', gid);
+  const path = document.createElementNS(ns,'path');
+  path.setAttribute('d', d); path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width','4'); path.setAttribute('fill','none');
+  path.setAttribute('stroke-linecap','round');
+  g.appendChild(path);
+  const dot = document.createElementNS(ns,'circle');
+  dot.setAttribute('r','7'); dot.setAttribute('fill', color);
+  const anim = document.createElementNS(ns,'animateMotion');
+  anim.setAttribute('dur','0.9s'); anim.setAttribute('fill','freeze'); anim.setAttribute('path', d);
+  dot.appendChild(anim);
+  g.appendChild(dot);
+  const holder = document.getElementById('ladder-highlights');
+  if(holder) holder.appendChild(g);
+}
+
+function drawLot(){
+  const names = lists.lot;
+  if(names.length===0){ alert('이름을 추가해주세요.'); return; }
+  const pick = names[Math.floor(Math.random()*names.length)];
+  document.getElementById('lot-result').classList.remove('hidden');
+  const el = document.getElementById('lot-result-text');
+  const dots = ['.','..','...'];
+  let step = 0;
+  el.textContent = dots[0];
+  const iv = setInterval(()=>{
+    step++;
+    if(step>=6){ clearInterval(iv); el.textContent = pick; return; }
+    el.textContent = dots[step%3];
+  }, 320);
+}
+
+/* 뽑기: 순차 추첨 (중복 없이 하나씩 뽑아 위에 순서대로 배치) */
+let pickPool = null;
+let pickDrawnOrder = [];
+function resetPickState(){
+  pickPool = lists.pick.slice();
+  pickDrawnOrder = [];
+  document.getElementById('pick-drawn-grid').innerHTML='';
+  document.getElementById('pick-current-text').textContent='-';
+}
+function renderPickDrawnGrid(){
+  document.getElementById('pick-drawn-grid').innerHTML = pickDrawnOrder.map(n=>
+    `<div class="seat" style="min-height:40px; flex:0 0 auto; padding:8px 14px;">${escapeHtml(n)}</div>`
+  ).join('');
+}
+function drawPick(){
+  if(lists.pick.length===0){ alert('이름을 추가해주세요.'); return; }
+  if(pickPool===null) resetPickState();
+  if(pickPool.length===0){
+    document.getElementById('pick-current-text').textContent = '다 뽑았습니다';
+    return;
+  }
+  const idx = Math.floor(Math.random()*pickPool.length);
+  const picked = pickPool.splice(idx,1)[0];
+  pickDrawnOrder.push(picked);
+  document.getElementById('pick-current-text').textContent = picked;
+  renderPickDrawnGrid();
+}
+
+/* ---------------- GROUP (조 랜덤 생성) ---------------- */
+let groupMode = 'count';
+function selectGroupMode(mode){
+  groupMode = mode;
+  document.querySelectorAll('.group-mode-btn').forEach(b=> b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('group-count-area').classList.toggle('hidden', mode!=='count');
+  document.getElementById('group-size-area').classList.toggle('hidden', mode!=='size');
+}
+function buildGroups(){
+  const names = lists.group;
+  if(names.length===0){ alert('이름을 추가해주세요.'); return; }
+
+  let groupCount;
+  if(groupMode==='count'){
+    groupCount = parseInt(document.getElementById('group-count').value,10);
+    if(!groupCount || groupCount<1){ alert('조 개수를 입력해주세요.'); return; }
+  } else {
+    const size = parseInt(document.getElementById('group-size').value,10);
+    if(!size || size<1){ alert('한 조의 인원수를 입력해주세요.'); return; }
+    groupCount = Math.ceil(names.length/size);
+  }
+  groupCount = Math.max(1, Math.min(groupCount, names.length));
+
+  const shuffled = shuffle(names);
+  const base = Math.floor(names.length/groupCount);
+  const remainder = names.length - base*groupCount; // 앞쪽 조부터 한 명씩 더 받음
+  const groups = [];
+  let idx = 0;
+  for(let g=0; g<groupCount; g++){
+    const size = base + (g<remainder ? 1 : 0);
+    groups.push(shuffled.slice(idx, idx+size));
+    idx += size;
+  }
+
+  document.getElementById('group-output').classList.remove('hidden');
+  document.getElementById('group-result').innerHTML = groups.map((g,i)=>`
+    <div class="card" style="margin-bottom:0;">
+      <strong>${i+1}조</strong>
+      <p style="margin:6px 0 0; color:var(--ink);">${g.map(escapeHtml).join(', ')}</p>
+    </div>
+  `).join('');
+}
+
+/* ---------------- SEAT ---------------- */
+let seatLocks = {}; // flatIdx -> name (그 자리에 고정된 이름)
+
+function computeSeatLayout(total, wanted){
+  const rows = Math.max(1, Math.min(wanted, total));
+  const base = Math.floor(total/rows);
+  const remainder = total - base*rows; // 이 개수만큼 줄이 한 명씩 더 받음
+  const isStaggered = remainder > 0;
+  const longSize = base + (isStaggered ? 1 : 0);
+
+  // 뒤에서부터 1,2,3... 번호를 매겨서, 홀수 번(1,3,5..) 먼저 -> 짝수 번(2,4..) 나중 순서로 긴 줄 배정
+  const priorityLabels = [];
+  for(let l=1;l<=rows;l+=2) priorityLabels.push(l);
+  for(let l=2;l<=rows;l+=2) priorityLabels.push(l);
+  const longLabels = new Set(priorityLabels.slice(0, remainder));
+
+  const rowSizes = new Array(rows).fill(base);
+  for(let r=0;r<rows;r++){
+    const labelFromBack = rows - r; // r=0(맨 앞줄) -> 라벨 rows, r=rows-1(맨 뒷줄) -> 라벨 1
+    if(longLabels.has(labelFromBack)) rowSizes[r] = base+1;
+  }
+  return { rows, rowSizes, longSize };
+}
+
+/* 자리 배치하기: 적은 순서 그대로 보여주고, 클릭하면 그 자리가 고정됨 */
+function showSeatPreview(){
+  const names = lists.seat;
+  const total = names.length;
+  if(total===0){ alert('학생 이름을 추가해주세요.'); return; }
+
+  const wanted = parseInt(document.getElementById('seat-rows').value,10) || 1;
+  const { rowSizes, longSize } = computeSeatLayout(total, wanted);
+  const itemPct = 100/longSize;
+
+  let idx = 0;
+  const rowsHtml = rowSizes.map(size=>{
+    const rowNames = names.slice(idx, idx+size);
+    const items = rowNames.map((n,j)=>{
+      const flatIdx = idx+j;
+      const locked = seatLocks[flatIdx]!==undefined;
+      return `<div class="seat ${locked?'locked':''}" style="width:${itemPct}%; flex:0 0 auto; border-radius:0;" onclick="toggleSeatLock(${flatIdx}, this)" data-name="${escapeHtml(n)}">${escapeHtml(n)}</div>`;
+    }).join('');
+    idx += size;
+    return `<div style="display:flex; justify-content:center; margin-bottom:8px;">${items}</div>`;
+  }).join('');
+
+  const grid = document.getElementById('seat-grid');
+  grid.style.display = 'block';
+  grid.innerHTML = rowsHtml;
+  document.getElementById('seat-output').classList.remove('hidden');
+}
+
+function randomizeSeats(){
+  const names = lists.seat;
+  const wanted = parseInt(document.getElementById('seat-rows').value,10) || 1;
+  const total = names.length;
+  if(total===0){ alert('학생 이름을 추가해주세요.'); return; }
+  const { rowSizes, longSize } = computeSeatLayout(total, wanted);
+  const totalSeats = rowSizes.reduce((a,b)=>a+b,0);
+
+  // 고정된 자리는 그대로 유지하고, 나머지 이름만 다시 섞어서 채움
+  Object.keys(seatLocks).forEach(k=>{ if(!names.includes(seatLocks[k])) delete seatLocks[k]; });
+  const lockedNames = new Set(Object.values(seatLocks));
+  const remainingNames = names.filter(n=> !lockedNames.has(n));
+  const shuffledRemaining = shuffle(remainingNames);
+
+  const flat = [];
+  let pool = 0;
+  for(let i=0;i<totalSeats;i++){
+    if(seatLocks[i]!==undefined){ flat.push(seatLocks[i]); }
+    else { flat.push(shuffledRemaining[pool]); pool++; }
+  }
+
+  const itemPct = 100/longSize;
+  let idx = 0;
+  const rowsHtml = rowSizes.map(size=>{
+    const rowFlat = flat.slice(idx, idx+size);
+    const items = rowFlat.map((n,j)=>{
+      const flatIdx = idx+j;
+      const locked = seatLocks[flatIdx]!==undefined;
+      return `<div class="seat ${locked?'locked':''}" style="width:${itemPct}%; flex:0 0 auto; border-radius:0;" onclick="toggleSeatLock(${flatIdx}, this)" data-name="${escapeHtml(n)}">${escapeHtml(n)}</div>`;
+    }).join('');
+    idx += size;
+    return `<div style="display:flex; justify-content:center; margin-bottom:8px;">${items}</div>`;
+  }).join('');
+
+  const grid = document.getElementById('seat-grid');
+  grid.style.display = 'block';
+  grid.innerHTML = rowsHtml;
+  document.getElementById('seat-output').classList.remove('hidden');
+}
+
+function toggleSeatLock(flatIdx, el){
+  if(seatLocks[flatIdx]!==undefined){
+    delete seatLocks[flatIdx];
+    el.classList.remove('locked');
+  } else {
+    seatLocks[flatIdx] = el.getAttribute('data-name');
+    el.classList.add('locked');
+  }
+}
+
+/* ---------------- UTIL ---------------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
