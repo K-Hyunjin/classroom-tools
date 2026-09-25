@@ -257,7 +257,7 @@
         <span class="people-badge" id="host-badge">참가 0명</span>
       </div>
       <div class="room-center" id="host-center">
-        <button class="btn accent big-round" onclick="startRoomVote()">투표<br>시작하기</button>
+        <button class="btn accent wide" onclick="startRoomVote()">투표 시작하기</button>
       </div>
       <div id="host-result-area" class="hidden"></div>
     </div>
@@ -567,11 +567,11 @@ function renderHostView(){
   const resultArea = document.getElementById('host-result-area');
   if(currentRoom.state==='lobby'){
     center.classList.remove('hidden');
-    center.innerHTML = `<button class="btn accent big-round" onclick="startRoomVote()">투표<br>시작하기</button>`;
+    center.innerHTML = `<button class="btn accent wide" onclick="startRoomVote()">투표 시작하기</button>`;
     resultArea.classList.add('hidden');
   } else if(currentRoom.state==='voting'){
     center.classList.remove('hidden');
-    center.innerHTML = `<button class="btn accent big-round" onclick="revealResults()">투표 결과<br>확인하기</button>`;
+    center.innerHTML = `<button class="btn accent wide" onclick="revealResults()">투표 결과 확인하기</button>`;
     resultArea.classList.add('hidden');
   } else {
     center.classList.add('hidden');
